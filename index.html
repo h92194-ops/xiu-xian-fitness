@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="修仙健身">
+<title>修仙健身</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font-family:-apple-system,sans-serif;max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:80px}
+.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#111;border-top:1px solid #333;display:flex;justify-content:space-around;padding:8px 0;z-index:100}
+.tab-btn{background:none;border:none;color:#666;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 12px}
+.tab-btn.active{color:#FFD700}
+.tab-btn span{font-size:20px}
+.page{display:none;padding:16px}
+.page.active{display:block}
+.card{background:#111;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:12px}
+.card-gold{background:#111;border:1px solid rgba(255,215,0,0.3);border-radius:16px;padding:16px;margin-bottom:12px}
+.title{color:#FFD700;font-size:16px;font-weight:bold;margin-bottom:12px}
+.subtitle{color:#999;font-size:12px;margin-bottom:8px}
+.btn-gold{background:#FFD700;color:#000;border:none;border-radius:12px;padding:12px;width:100%;font-size:16px;font-weight:bold;cursor:pointer;margin-top:8px}
+.btn-dark{background:#222;color:#fff;border:none;border-radius:12px;padding:10px;width:100%;font-size:14px;cursor:pointer;margin-top:8px}
+.btn-red{background:rgba(255,50,50,0.2);color:#ff5555;border:1px solid rgba(255,50,50,0.3);border-radius:12px;padding:10px;width:100%;font-size:14px;cursor:pointer;margin-top:8px}
+.progress-bar{background:#222;border-radius:8px;height:16px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,#FFD700,#FF8C00);border-radius:8px;transition:width 0.5s}
+.realm-icon{font-size:60px;text-align:center;margin:8px 0}
+.realm-name{color:#FFD700;font-size:24px;font-weight:bold;text-align:center}
+.stat-row{display:flex;justify-content:space-around;margin:12px 0}
+.stat-item{text-align:center}
+.stat-val{font-size:20px;font-weight:bold;color:#fff}
+.stat-lbl{font-size:11px;color:#666;margin-top:2px}
+.env-row{display:flex;gap:8px;overflow-x:auto;padding:4px 0;margin-bottom:12px}
+.env-btn{background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#fff;padding:8px 14px;font-size:13px;white-space:nowrap;cursor:pointer;flex-shrink:0}
+.env-btn.active{background:#FFD700;color:#000;border-color:#FFD700}
+.exercise-item{background:#1a1a1a;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;border:1px solid #222}
+.exercise-item.selected{border-color:rgba(255,215,0,0.5);background:#1f1f00}
+.ex-name{font-size:15px;font-weight:600;color:#fff}
+.ex-sub{font-size:12px;color:#666;margin-top:2px}
+.ex-last{font-size:11px;color:rgba(255,215,0,0.7);margin-top:3px}
+.set-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.set-input{background:#222;border:1px solid #333;border-radius:8px;color:#fff;padding:6px;width:65px;font-size:14px;text-align:center}
+.set-label{color:#666;font-size:12px}
+.set-del{background:none;border:none;color:#ff5555;font-size:18px;cursor:pointer}
+.vitality-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.vitality-label{color:#fff;font-size:12px;width:55px}
+.vitality-bar{flex:1;background:#222;border-radius:4px;height:8px;overflow:hidden}
+.vitality-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.vitality-status{font-size:11px;width:28px;text-align:right}
+.week-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;margin-bottom:4px}
+.week-row.today{background:rgba(255,215,0,0.1)}
+.week-day{color:#666;font-size:12px;width:30px}
+.week-day.today{color:#FFD700;font-weight:bold}
+.week-parts{color:#fff;font-size:12px;flex:1}
+.week-check{color:#4CAF50;font-size:14px}
+.chart-bar{display:flex;align-items:flex-end;gap:3px;height:120px;margin:12px 0}
+.bar-item{display:flex;flex-direction:column;align-items:center;flex:1}
+.bar-fill{width:100%;background:linear-gradient(0deg,#FFD700,#FF8C00);border-radius:3px 3px 0 0;min-height:2px}
+.bar-label{font-size:9px;color:#666;margin-top:3px}
+.heat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.heat-label{color:#fff;font-size:12px;width:55px}
+.heat-bar{flex:1;background:#222;border-radius:6px;height:20px;overflow:hidden}
+.heat-fill{height:100%;border-radius:6px;transition:width 0.3s}
+.heat-count{font-size:11px;color:#666;width:28px;text-align:right}
+.realm-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a}
+.realm-row:last-child{border-bottom:none}
+.realm-info{flex:1}
+.realm-title{font-size:14px;color:#fff}
+.realm-desc{font-size:11px;color:#666;margin-top:2px}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px}
+.badge-green{background:rgba(76,175,80,0.2);color:#4CAF50}
+.badge-yellow{background:rgba(255,215,0,0.2);color:#FFD700}
+.pill-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1a1a1a}
+.pill-row:last-child{border-bottom:none}
+.pill-info{flex:1}
+.pill-reason{font-size:12px;color:#fff}
+.pill-date{font-size:11px;color:#666}
+.pill-qi{font-size:12px;color:#b06fdb}
+.body-data-row{display:flex;gap:8px;margin:8px 0}
+.body-item{flex:1;background:#1a1a1a;border-radius:12px;padding:12px;text-align:center}
+.body-icon{font-size:24px}
+.body-val{font-size:15px;font-weight:bold;color:#fff;margin:4px 0}
+.body-lbl{font-size:11px;color:#666}
+input,select{background:#222;border:1px solid #333;border-radius:10px;color:#fff;padding:10px;width:100%;font-size:14px;margin-bottom:8px}
+select option{background:#222}
+.alert{background:#1a1a00;border:1px solid rgba(255,215,0,0.5);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px}
+.alert-title{color:#FFD700;font-size:18px;font-weight:bold;margin-bottom:8px}
+.attr-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.attr-label{color:#fff;font-size:12px;width:65px}
+.attr-bar{flex:1;background:#222;border-radius:6px;height:20px;overflow:hidden}
+.attr-fill{height:100%;border-radius:6px}
+.attr-pct{font-size:11px;color:#666;width:32px;text-align:right}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a}
+.toggle-row:last-child{border-bottom:none}
+.period-sel{display:flex;gap:8px;margin-bottom:12px}
+.period-btn{flex:1;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#666;padding:8px;font-size:13px;cursor:pointer}
+.period-btn.active{background:rgba(255,215,0,0.15);border-color:#FFD700;color:#FFD700}
+.last-record-box{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:10px;margin-bottom:10px}
+.section-header{color:#FFD700;font-size:13px;font-weight:600;margin-bottom:6px}
+.warning-box{background:rgba(255,100,0,0.1);border:1px solid rgba(255,100,0,0.3);border-radius:8px;padding:10px;margin-top:8px}
+.success-box{background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:8px;padding:10px}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:200;justify-content:center;align-items:center}
+.modal.show{display:flex}
+.modal-content{background:#111;border:1px solid rgba(255,215,0,0.3);border-radius:20px;padding:24px;max-width:360px;width:90%;text-align:center}
+.modal-title{color:#FFD700;font-size:22px;font-weight:bold;margin-bottom:12px}
+.modal-body{color:#ccc;font-size:15px;line-height:1.6;margin-bottom:20px}
+</style>
+</head>
+<body>
+
+<div id="levelUpModal" class="modal">
+<div class="modal-content">
+<div style="font-size:60px">🎊</div>
+<div class="modal-title">突破境界！</div>
+<div class="modal-body" id="levelUpText"></div>
+<button class="btn-gold" onclick="closeLevelUp()">感謝天地！</button>
+</div>
+</div>
+
+<!-- 首頁 -->
+<div id="page-home" class="page active">
+<div id="homeContent"></div>
+</div>
+
+<!-- 修煉 -->
+<div id="page-workout" class="page">
+<div id="workoutContent"></div>
+</div>
+
+<!-- 圖表 -->
+<div id="page-stats" class="page">
+<div id="statsContent"></div>
+</div>
+
+<!-- 計劃 -->
+<div id="page-plan" class="page">
+<div id="planContent"></div>
+</div>
+
+<!-- 道友 -->
+<div id="page-profile" class="page">
+<div id="profileContent"></div>
+</div>
+
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showPage('home')"><span>🏠</span>主頁</button>
+<button class="tab-btn" onclick="showPage('workout')"><span>⚔️</span>修煉</button>
+<button class="tab-btn" onclick="showPage('stats')"><span>📊</span>靈力圖</button>
+<button class="tab-btn" onclick="showPage('plan')"><span>📅</span>計劃</button>
+<button class="tab-btn" onclick="showPage('profile')"><span>👤</span>道友</button>
+</div>
+
+<script>
+// ===== 資料模型 =====
+const REALMS = [
+  {name:'煉氣',icon:'🌱'},{name:'築基',icon:'⚡'},
+  {name:'結丹',icon:'🔥'},{name:'元嬰',icon:'💫'},
+  {name:'化神',icon:'🌟'},{name:'煉虛',icon:'✨'},
+  {name:'合體',icon:'🌙'},{name:'大乘',icon:'☀️'}
+];
+const STAGES = ['初期','中期','圓滿'];
+const ATTRS = {str:{name:'體魄',icon:'💪',color:'#ef4444'},sta:{name:'根骨',icon:'❤️',color:'#22c55e'},agi:{name:'身法',icon:'🌀',color:'#3b82f6'},aux:{name:'輔助',icon:'✨',color:'#a855f7'}};
+const ENVS = [{id:'bodyweight',name:'徒手',icon:'🤸'},{id:'gym',name:'重訓',icon:'🏋️'},{id:'cardio',name:'有氧',icon:'🏃'},{id:'resistance',name:'彈力帶',icon:'🎯'}];
+const BODY_PARTS = ['上肢推','上肢拉','下肢','下肢髖','心肺','核心','柔韌','輔助'];
+
+const EXERCISES = [
+  {id:'e1',name:'伏地挺身',kung:'推山掌',attr:'str',envs:['bodyweight'],type:'reps',diff:1.0,from:0,part:'上肢推'},
+  {id:'e2',name:'引體向上',kung:'雲梯功',attr:'str',envs:['bodyweight'],type:'reps',diff:2.0,from:2,part:'上肢拉'},
+  {id:'e3',name:'徒手深蹲',kung:'磐石步',attr:'str',envs:['bodyweight'],type:'reps',diff:1.0,from:0,part:'下肢'},
+  {id:'e4',name:'保加利亞分腿蹲',kung:'玄鐵步',attr:'str',envs:['bodyweight'],type:'reps',diff:1.5,from:1,part:'下肢'},
+  {id:'e5',name:'臀橋',kung:'踏浪行',attr:'str',envs:['bodyweight','resistance'],type:'reps',diff:0.8,from:0,part:'下肢髖'},
+  {id:'e6',name:'臥推',kung:'震天式',attr:'str',envs:['gym'],type:'repsWeight',diff:2.0,from:1,part:'上肢推'},
+  {id:'e7',name:'硬舉',kung:'力拔山兮',attr:'str',envs:['gym'],type:'repsWeight',diff:2.5,from:2,part:'下肢髖'},
+  {id:'e8',name:'負重深蹲',kung:'馱天功',attr:'str',envs:['gym'],type:'repsWeight',diff:2.5,from:1,part:'下肢'},
+  {id:'e9',name:'啞鈴肩推',kung:'擎天式',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'上肢推'},
+  {id:'e10',name:'槓鈴划船',kung:'破浪掌',attr:'str',envs:['gym'],type:'repsWeight',diff:2.0,from:1,part:'上肢拉'},
+  {id:'e11',name:'慢跑',kung:'基礎吐納法',attr:'sta',envs:['cardio'],type:'time',diff:0.5,from:0,part:'心肺'},
+  {id:'e12',name:'跳繩',kung:'燃血爆發',attr:'sta',envs:['cardio','bodyweight'],type:'reps',diff:0.1,from:0,part:'心肺'},
+  {id:'e13',name:'波比跳',kung:'燃血爆發秘術',attr:'sta',envs:['bodyweight','cardio'],type:'reps',diff:1.5,from:1,part:'心肺'},
+  {id:'e14',name:'衝刺跑',kung:'縱雲梯',attr:'sta',envs:['cardio'],type:'repsTime',diff:2.0,from:2,part:'心肺'},
+  {id:'e15',name:'棒式',kung:'千斤墜',attr:'agi',envs:['bodyweight','resistance'],type:'repsTime',diff:1.0,from:0,part:'核心'},
+  {id:'e16',name:'瑜珈',kung:'縮骨功',attr:'agi',envs:['bodyweight'],type:'time',diff:0.8,from:0,part:'柔韌'},
+  {id:'e17',name:'動態拉伸',kung:'軟骨術',attr:'agi',envs:['bodyweight'],type:'time',diff:0.7,from:0,part:'柔韌'},
+  {id:'e18',name:'單腳平衡',kung:'踏浪行',attr:'agi',envs:['bodyweight'],type:'repsTime',diff:0.8,from:1,part:'核心'},
+  {id:'e19',name:'彈力帶深蹲',kung:'磐石步·帶勁',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'下肢'},
+  {id:'e20',name:'彈力帶划船',kung:'破浪掌·帶勁',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢拉'},
+  {id:'e21',name:'彈力帶臀橋',kung:'踏浪行·帶勁',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'下肢髖'},
+  {id:'e22',name:'蛋白質補充',kung:'聚靈丹',attr:'aux',envs:['bodyweight','gym','cardio','resistance'],type:'reps',diff:0.5,from:0,part:'輔助'},
+  {id:'e23',name:'優質睡眠',kung:'深層冥想',attr:'aux',envs:['bodyweight','gym','cardio','resistance'],type:'time',diff:1.0,from:0,part:'輔助'},
+];
+
+// ===== 狀態管理 =====
+let state = {
+  profile: {name:'修仙者',majorRealm:0,minorRealm:0,currentQi:0,totalQi:0,consecutiveDays:0,lastTraining:null,pills:[],weight:null,height:null,bodyFat:null},
+  logs: [],
+  customExercises: [],
+  weeklyPlan: {1:['上肢推','核心'],2:['下肢','有氧'],3:['上肢拉','柔韌'],4:['有氧','核心'],5:['全身','柔韌'],6:['自由修煉'],0:['休息','柔韌']},
+  workout: {env:'bodyweight',selectedEx:null,sets:[],note:''},
+  statPeriod: 'week',
+  currentPage: 'home'
+};
+
+function saveState(){localStorage.setItem('xiu_state',JSON.stringify(state))}
+function loadState(){const d=localStorage.getItem('xiu_state');if(d){const s=JSON.parse(d);state={...state,...s};state.workout={env:'bodyweight',selectedEx:null,sets:[],note:''}}}
+
+function requiredQi(major,minor){
+  const bases=[100,500,1500,4000,10000,25000,60000,150000];
+  const mults=[1.0,1.5,2.0];
+  return bases[major]*mults[minor];
+}
+
+function realmName(major,minor){return REALMS[major].name+STAGES[minor]}
+function realmDisplay(major,minor){return REALMS[major].icon+' '+REALMS[major].name+' · '+STAGES[minor]}
+
+function calcQi(ex,sets){
+  let total=0;
+  sets.forEach(s=>{
+    let base=0;
+    if(ex.type==='reps') base=(parseInt(s.reps)||0)*ex.diff;
+    else if(ex.type==='repsWeight') base=(parseInt(s.reps)||0)*ex.diff+((parseFloat(s.weight)||0)*0.1);
+    else if(ex.type==='time') base=(parseInt(s.time)||0)/60*ex.diff*10;
+    else if(ex.type==='repsTime') base=(parseInt(s.reps)||0)*ex.diff+(parseInt(s.time)||0)/60*ex.diff*5;
+    total+=base;
+  });
+  const bonus=state.profile.consecutiveDays>=3?1+(Math.min(state.profile.consecutiveDays,30)*0.1):1;
+  return Math.round(total*bonus);
+}
+
+function allRecords(){return state.logs.flatMap(l=>l.records)}
+function lastRecord(exId){return allRecords().filter(r=>r.exId===exId).sort((a,b)=>b.date-a.date)[0]}
+function todayLog(){return state.logs.find(l=>isToday(l.date))}
+function isToday(ts){const d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()}
+
+function fatigueLevel(part){
+  const cutoff=Date.now()-48*3600000;
+  const recent=state.logs.filter(l=>l.date>=cutoff).flatMap(l=>l.records);
+  const all=[...EXERCISES,...state.customExercises];
+  const count=recent.filter(r=>{const ex=all.find(e=>e.id===r.exId);return ex&&ex.part===part}).length;
+  return Math.min(count/3,1);
+}
+
+function bodyPartFreq(days){
+  const cutoff=Date.now()-days*86400000;
+  const recent=state.logs.filter(l=>l.date>=cutoff).flatMap(l=>l.records);
+  const all=[...EXERCISES,...state.customExercises];
+  const freq={};
+  recent.forEach(r=>{const ex=all.find(e=>e.id===r.exId);if(ex){freq[ex.part]=(freq[ex.part]||0)+1}});
+  return freq;
+}
+
+function weeklyQiData(){
+  const data=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const log=state.logs.find(l=>new Date(l.date).toDateString()===d.toDateString());
+    const days=['日','一','二','三','四','五','六'];
+    data.push({label:days[d.getDay()],qi:log?log.totalQi:0});
+  }
+  return data;
+}
+
+function monthlyQiData(){
+  const data=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const log=state.logs.find(l=>new Date(l.date).toDateString()===d.toDateString());
+    data.push({label:d.getDate()+'',qi:log?log.totalQi:0});
+  }
+  return data;
+}
+
+function updateConsecutiveDays(){
+  const today=new Date().toDateString();
+  if(!state.profile.lastTraining){state.profile.consecutiveDays=1}
+  else{
+    const last=new Date(state.profile.lastTraining).toDateString();
+    const yesterday=new Date(Date.now()-86400000).toDateString();
+    if(last===today){}
+    else if(last===yesterday){state.profile.consecutiveDays++}
+    else{state.profile.consecutiveDays=1}
+  }
+  state.profile.lastTraining=Date.now();
+}
+
+function checkLevelUp(){
+  const req=requiredQi(state.profile.majorRealm,state.profile.minorRealm);
+  if(state.profile.currentQi>=req){
+    state.profile.currentQi-=req;
+    if(state.profile.minorRealm<2){state.profile.minorRealm++}
+    else if(state.profile.majorRealm<7){state.profile.majorRealm++;state.profile.minorRealm=0}
+    document.getElementById('levelUpText').textContent='恭喜道友突破至\n'+realmDisplay(state.profile.majorRealm,state.profile.minorRealm)+'！\n\n天地靈氣湧入，修為大進！';
+    document.getElementById('levelUpModal').classList.add('show');
+    return true;
+  }
+  return false;
+}
+
+function closeLevelUp(){document.getElementById('levelUpModal').classList.remove('show');renderAll()}
+
+function saveWorkout(){
+  const ex=[...EXERCISES,...state.customExercises].find(e=>e.id===state.workout.selectedEx);
+  if(!ex||state.workout.sets.length===0)return;
+  const qi=calcQi(ex,state.workout.sets);
+  const record={id:'r'+Date.now(),exId:ex.id,exName:ex.name,kung:ex.kung,attr:ex.attr,sets:[...state.workout.sets],date:Date.now(),qi,note:state.workout.note};
+  
+  // 破紀錄檢查
+  const prev=lastRecord(ex.id);
+  if(prev&&ex.type==='repsWeight'){
+    const prevBest=Math.max(...prev.sets.map(s=>parseFloat(s.weight)||0));
+    const newBest=Math.max(...state.workout.sets.map(s=>parseFloat(s.weight)||0));
+    if(newBest>prevBest){
+      const pill={id:'p'+Date.now(),date:Date.now(),reason:'突破「'+ex.kung+'」個人極限！',qi:Math.round(qi*0.5)};
+      state.profile.pills.push(pill);
+      state.profile.currentQi+=pill.qi;
+      state.profile.totalQi+=pill.qi;
+    }
+  }
+  
+  updateConsecutiveDays();
+  const today=Date.now();
+  const log=state.logs.find(l=>isToday(l.date));
+  if(log){log.records.push(record);log.totalQi+=qi}
+  else{state.logs.push({id:'l'+Date.now(),date:today,records:[record],totalQi:qi})}
+  
+  state.profile.currentQi+=qi;
+  state.profile.totalQi+=qi;
+  state.workout={env:state.workout.env,selectedEx:null,sets:[],note:''};
+  
+  checkLevelUp();
+  saveState();
+  renderAll();
+  showPage('home');
+}
+
+// ===== 頁面切換 =====
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.tab-btn')[['home','workout','stats','plan','profile'].indexOf(page)].classList.add('active');
+  state.currentPage=page;
+  renderPage(page);
+}
+
+function renderAll(){renderPage(state.currentPage)}
+function renderPage(page){
+  if(page==='home')renderHome();
+  else if(page==='workout')renderWorkout();
+  else if(page==='stats')renderStats();
+  else if(page==='plan')renderPlan();
+  else if(page==='profile')renderProfile();
+}
+
+// ===== 首頁 =====
+function renderHome(){
+  const p=state.profile;
+  const req=requiredQi(p.majorRealm,p.minorRealm);
+  const pct=Math.min(p.currentQi/req*100,100);
+  const tlog=todayLog();
+  const todayQi=tlog?tlog.totalQi:0;
+  const weekday=new Date().getDay();
+  const todayParts=state.weeklyPlan[weekday]||[];
+  const parts=['上肢推','上肢拉','下肢','心肺','核心'];
+  
+  let vitalityHtml='';
+  parts.forEach(part=>{
+    const f=fatigueLevel(part);
+    const color=f>0.7?'#ef4444':f>0.4?'#f97316':'#22c55e';
+    const status=f>0.7?'疲勞':f>0.4?'尚可':'充沛';
+    vitalityHtml+=`<div class="vitality-row"><div class="vitality-label">${part}</div><div class="vitality-bar"><div class="vitality-fill" style="width:${f*100}%;background:${color}"></div></div><div class="vitality-status" style="color:${color}">${status}</div></div>`;
+  });
+
+  document.getElementById('homeContent').innerHTML=`
+    <div style="text-align:center;padding:16px 0 8px">
+      <div class="realm-icon">${REALMS[p.majorRealm].icon}</div>
+      <div class="realm-name">${realmDisplay(p.majorRealm,p.minorRealm)}</div>
+      <div style="color:#666;font-size:13px;margin-top:4px">「${p.name}」</div>
+    </div>
+    <div class="card-gold">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="title" style="margin:0">⚡ 修為進度</div>
+        <div style="color:#666;font-size:12px">${Math.round(p.currentQi)} / ${req}</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="color:#666;font-size:12px;margin-top:4px">${p.majorRealm===7&&p.minorRealm===2?'已達最高境界':'下一境界：'+realmName(p.minorRealm===2?(p.majorRealm<7?p.majorRealm+1:p.majorRealm):p.majorRealm,p.minorRealm===2?0:(p.minorRealm+1))}</div>
+    </div>
+    <div class="card">
+      <div class="title">📅 今日修煉</div>
+      <div style="display:flex;justify-content:space-between">
+        <div><div style="color:#666;font-size:12px">今日計劃</div><div style="color:#fff;font-size:14px;margin-top:2px">${todayParts.join('、')}</div></div>
+        <div style="text-align:right"><div style="color:#666;font-size:12px">今日靈氣</div><div style="color:#FFD700;font-size:14px;margin-top:2px">+${Math.round(todayQi)} ⚡</div></div>
+      </div>
+      ${!tlog&&!todayParts.includes('休息')?'<div style="color:#f97316;font-size:12px;margin-top:8px">⚠️ 道友，今日尚未修煉！</div>':''}
+    </div>
+    <div class="card">
+      <div class="title">💚 元氣狀態</div>
+      ${vitalityHtml}
+    </div>
+    <div class="card">
+      <div class="stat-row">
+        <div class="stat-item"><div style="font-size:24px">🔥</div><div class="stat-val" style="color:#f97316">${p.consecutiveDays}</div><div class="stat-lbl">連續天數</div></div>
+        <div class="stat-item"><div style="font-size:24px">⚡</div><div class="stat-val" style="color:#FFD700">${Math.round(p.totalQi)}</div><div class="stat-lbl">累積靈氣</div></div>
+        <div class="stat-item"><div style="font-size:24px">💊</div><div class="stat-val" style="color:#a855f7">${p.pills.length}</div><div class="stat-lbl">修為丹</div></div>
+      </div>
+    </div>
+    ${p.consecutiveDays>=3?`<div class="card"><div style="color:#FFD700;font-size:13px">🎯 連續修煉加成：×${(1+Math.min(p.consecutiveDays,30)*0.1).toFixed(1)} 靈氣！</div></div>`:''}
+  `;
+}
+
+// ===== 修煉頁 =====
+function renderWorkout(){
+  const allEx=[...EXERCISES,...state.customExercises];
+  const filtered=allEx.filter(e=>e.envs.includes(state.workout.env)&&e.from<=state.profile.majorRealm);
+  const grouped={};
+  BODY_PARTS.forEach(p=>{grouped[p]=filtered.filter(e=>e.part===p)});
+  
+  let envHtml=ENVS.map(e=>`<button class="env-btn${state.workout.env===e.id?' active':''}" onclick="setEnv('${e.id}')">${e.icon} ${e.name}</button>`).join('');
+  
+  let exHtml='';
+  BODY_PARTS.forEach(part=>{
+    if(grouped[part]&&grouped[part].length>0){
+      exHtml+=`<div style="color:#666;font-size:12px;margin:10px 0 4px;padding-left:4px">${part}</div>`;
+      grouped[part].forEach(ex=>{
+        const last=lastRecord(ex.id);
+        const lastText=last?`上次修煉：${formatSets(last.sets,ex.type)}`:'';
+        exHtml+=`<div class="exercise-item${state.workout.selectedEx===ex.id?' selected':''}" onclick="selectEx('${ex.id}')">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><div class="ex-name">${ATTRS[ex.attr].icon} ${ex.kung}</div><div class="ex-sub">${ex.name}</div>${lastText?`<div class="ex-last">📖 ${lastText}</div>`:''}</div>
+            <div style="text-align:right"><div style="color:#f97316;font-size:12px">×${ex.diff}</div></div>
+          </div>
+        </div>`;
+      });
+    }
+  });
+  
+  let workoutHtml='';
+  if(state.workout.selectedEx){
+    const ex=allEx.find(e=>e.id===state.workout.selectedEx);
+    const last=lastRecord(ex.id);
+    const totalQi=calcQi(ex,state.workout.sets);
+    
+    let setsHtml=state.workout.sets.map((s,i)=>`
+      <div class="set-row">
+        <span style="color:#666;font-size:12px;width:40px">第${i+1}組</span>
+        ${ex.type==='reps'||ex.type==='repsWeight'||ex.type==='repsTime'?`<input class="set-input" type="number" placeholder="次" value="${s.reps||''}" onchange="updateSet(${i},'reps',this.value)"><span class="set-label">次</span>`:''}
+        ${ex.type==='repsWeight'?`<input class="set-input" type="number" placeholder="kg" value="${s.weight||''}" onchange="updateSet(${i},'weight',this.value)"><span class="set-label">kg</span>`:''}
+        ${ex.type==='time'||ex.type==='repsTime'?`<input class="set-input" type="number" placeholder="秒" value="${s.time||''}" onchange="updateSet(${i},'time',this.value)"><span class="set-label">秒</span>`:''}
+        <button class="set-del" onclick="removeSet(${i})">🗑</button>
+      </div>`).join('');
+    
+    workoutHtml=`
+      <div class="card-gold" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="title" style="margin:0">⚔️ ${ex.kung} 修煉中</div>
+          <button onclick="clearWorkout()" style="background:none;border:none;color:#666;font-size:20px;cursor:pointer">✕</button>
+        </div>
+        ${last?`<div class="last-record-box"><div class="section-header">📖 上次修煉功法記錄</div>${last.sets.map(s=>`<div style="color:#666;font-size:12px">• ${formatSet(s,ex.type)}</div>`).join('')}</div>`:''}
+        ${setsHtml}
+        <button class="btn-dark" onclick="addSet()">＋ 新增一組</button>
+        <input placeholder="修煉心得（選填）" value="${state.workout.note}" onchange="state.workout.note=this.value" style="margin-top:8px">
+        ${state.workout.sets.length>0?`<button class="btn-gold" onclick="saveWorkout()">完成修煉　+${totalQi} ⚡ 靈氣</button>`:''}
+      </div>`;
+  }
+  
+  document.getElementById('workoutContent').innerHTML=`
+    <div style="padding-top:8px">
+      <div class="title">🌍 選擇修煉環境</div>
+      <div class="env-row">${envHtml}</div>
+      <div class="title">📜 當前境界推薦功法</div>
+      ${exHtml}
+      ${workoutHtml}
+      <button class="btn-dark" onclick="showAddCustom()" style="margin-top:12px">＋ 創建秘技（自訂動作）</button>
+    </div>`;
+}
+
+function setEnv(env){state.workout.env=env;state.workout.selectedEx=null;state.workout.sets=[];renderWorkout()}
+function selectEx(id){state.workout.selectedEx=id;state.workout.sets=[];renderWorkout();setTimeout(()=>document.querySelector('.card-gold:last-of-type')?.scrollIntoView({behavior:'smooth'}),100)}
+function clearWorkout(){state.workout.selectedEx=null;state.workout.sets=[];renderWorkout()}
+function addSet(){state.workout.sets.push({...( state.workout.sets[state.workout.sets.length-1]||{})});renderWorkout()}
+function removeSet(i){state.workout.sets.splice(i,1);renderWorkout()}
+function updateSet(i,key,val){state.workout.sets[i][key]=val;renderWorkout()}
+
+function formatSet(s,type){
+  if(type==='reps')return`${s.reps||0} 次`;
+  if(type==='repsWeight')return`${s.reps||0} 次 × ${s.weight||0} kg`;
+  if(type==='time')return`${s.time||0} 秒`;
+  if(type==='repsTime')return`${s.reps||0} 次 / ${s.time||0} 秒`;
+  return'';
+}
+function formatSets(sets,type){return sets.slice(0,2).map(s=>formatSet(s,type)).join('、')}
+
+function showAddCustom(){
+  document.getElementById('workoutContent').innerHTML+=`
+    <div class="card" style="margin-top:12px" id="customForm">
+      <div class="title">🔮 創建秘技</div>
+      <input id="cName" placeholder="動作名稱">
+      <input id="cKung" placeholder="功法名稱（修仙名）">
+      <select id="cAttr">${Object.entries(ATTRS).map(([k,v])=>`<option value="${k}">${v.icon} ${v.name}</option>`).join('')}</select>
+      <select id="cPart">${BODY_PARTS.map(p=>`<option value="${p}">${p}</option>`).join('')}</select>
+      <select id="cType"><option value="reps">組×次數</option><option value="repsWeight">組×次數×重量</option><option value="time">時間</option><option value="repsTime">組×時間</option></select>
+      <input id="cDiff" type="number" placeholder="難度係數（例：1.5）" value="1.0">
+      <button class="btn-gold" onclick="saveCustom()">創建</button>
+      <button class="btn-dark" onclick="renderWorkout()">取消</button>
+    </div>`;
+}
+
+function saveCustom(){
+  const name=document.getElementById('cName').value;
+  if(!name)return;
+  const ex={id:'c'+Date.now(),name,kung:document.getElementById('cKung').value||name,attr:document.getElementById('cAttr').value,envs:['bodyweight','gym','cardio','resistance'],type:document.getElementById('cType').value,diff:parseFloat(document.getElementById('cDiff').value)||1,from:0,part:document.getElementById('cPart').value,custom:true};
+  state.customExercises.push(ex);
+  saveState();
+  renderWorkout();
+}
+
+// ===== 圖表頁 =====
+function renderStats(){
+  const data=state.statPeriod==='week'?weeklyQiData():monthlyQiData();
+  const maxQi=Math.max(...data.map(d=>d.qi),1);
+  const freq=bodyPartFreq(state.statPeriod==='week'?7:30);
+  const maxFreq=Math.max(...Object.values(freq),1);
+  
+  let chartHtml=data.map(d=>`<div class="bar-item"><div class="bar-fill" style="height:${Math.max(d.qi/maxQi*100,d.qi>0?4:2)}px;${d.qi===0?'background:#222':''}"></div><div class="bar-label">${d.label}</div></div>`).join('');
+  
+  let heatHtml=BODY_PARTS.filter(p=>p!=='輔助').map(p=>{
+    const c=freq[p]||0;
+    const r=c/maxFreq;
+    const color=r===0?'#222':r<0.33?'rgba(59,130,246,0.6)':r<0.66?'rgba(249,115,22,0.8)':'#ef4444';
+    return`<div class="heat-row"><div class="heat-label">${p}</div><div class="heat-bar"><div class="heat-fill" style="width:${r*100}%;background:${color}"></div></div><div class="heat-count">${c}次</div></div>`;
+  }).join('');
+  
+  const cutoff=Date.now()-(state.statPeriod==='week'?7:30)*86400000;
+  const recent=state.logs.filter(l=>l.date>=cutoff).flatMap(l=>l.records);
+  const attrQi={};
+  recent.forEach(r=>{attrQi[r.attr]=(attrQi[r.attr]||0)+r.qi});
+  const totalAttr=Object.values(attrQi).reduce((a,b)=>a+b,0)||1;
+  let attrHtml=Object.entries(ATTRS).map(([k,v])=>{
+    const qi=attrQi[k]||0;const pct=Math.round(qi/totalAttr*100);
+    return`<div class="attr-row"><div class="attr-label">${v.icon} ${v.name}</div><div class="attr-bar"><div class="attr-fill" style="width:${pct}%;background:${v.color}"></div></div><div class="attr-pct">${pct}%</div></div>`;
+  }).join('');
+  
+  const recentLogs=state.logs.filter(l=>l.date>=cutoff).sort((a,b)=>b.date-a.date);
+  let historyHtml=recentLogs.length===0?'<div style="color:#666;text-align:center;padding:16px">尚無修煉記錄</div>':
+    recentLogs.map(l=>`<div style="background:#1a1a1a;border-radius:12px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between"><span style="font-weight:600">${new Date(l.date).toLocaleDateString('zh-TW')}</span><span style="color:#FFD700">+${Math.round(l.totalQi)} ⚡</span></div>
+      ${l.records.map(r=>`<div style="color:#666;font-size:12px;margin-top:4px">${ATTRS[r.attr]?.icon||''} ${r.kung} · ${r.sets.length}組</div>`).join('')}
+    </div>`).join('');
+  
+  document.getElementById('statsContent').innerHTML=`
+    <div style="padding-top:8px">
+      <div class="period-sel">
+        <button class="period-btn${state.statPeriod==='week'?' active':''}" onclick="setPeriod('week')">本週</button>
+        <button class="period-btn${state.statPeriod==='month'?' active':''}" onclick="setPeriod('month')">本月</button>
+      </div>
+      <div class="card">
+        <div class="title">⚡ 靈力波動圖</div>
+        <div class="chart-bar">${chartHtml}</div>
+      </div>
+      <div class="card">
+        <div class="title">🔥 各部位修煉頻率</div>
+        ${heatHtml}
+      </div>
+      <div class="card">
+        <div class="title">☯️ 修煉屬性分布</div>
+        ${attrHtml}
+      </div>
+      <div class="card">
+        <div class="title">📜 修煉日誌</div>
+        ${historyHtml}
+      </div>
+    </div>`;
+}
+
+function setPeriod(p){state.statPeriod=p;renderStats()}
+
+// ===== 計劃頁 =====
+function renderPlan(){
+  const weekday=new Date().getDay();
+  const todayParts=state.weeklyPlan[weekday]||[];
+  const tlog=todayLog();
+  const hasTrained=!!tlog;
+  const days=['日','一','二','三','四','五','六'];
+  const dayKeys=[0,1,2,3,4,5,6];
+  const freq=bodyPartFreq(7);
+  const lacking=['上肢推','上肢拉','下肢','心肺','核心','柔韌'].filter(p=>(freq[p]||0)<2);
+  const fatigued=['上肢推','上肢拉','下肢','心肺','核心'].filter(p=>fatigueLevel(p)>0.7);
+  
+  let weekHtml=dayKeys.map(d=>{
+    const parts=state.weeklyPlan[d]||[];
+    const isToday=d===weekday;
+    const hasLog=state.logs.some(l=>{const ld=new Date(l.date);return ld.getDay()===d&&(Date.now()-l.date)<7*86400000});
+    return`<div class="week-row${isToday?' today':''}">
+      <div class="week-day${isToday?' today':''}">週${days[d]}</div>
+      <div class="week-parts">${parts.join('・')}</div>
+      ${hasLog?'<span class="week-check">✓</span>':isToday?'<span style="color:#FFD700;font-size:11px">今日</span>':''}
+    </div>`;
+  }).join('');
+  
+  let balanceHtml=lacking.length===0?
+    '<div class="success-box"><span style="color:#22c55e">✅ 本週修煉均衡，繼續保持！</span></div>':
+    `<div style="color:#666;font-size:12px;margin-bottom:8px">本週以下部位修煉不足，建議加強：</div>${lacking.map(p=>`<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#fff">⚠️ ${p}</span><span style="color:#666;font-size:12px">本週 ${freq[p]||0} 次</span></div>`).join('')}`;
+  
+  let fatigueHtml=fatigued.length>0?`<div class="warning-box" style="margin-top:8px"><div style="color:#f97316;font-size:12px;margin-bottom:4px">⚠️ 以下部位近期過度修煉，建議休息：</div>${fatigued.map(p=>`<div style="color:#fff;font-size:13px">🔥 ${p}</div>`).join('')}</div>`:'';
+  
+  document.getElementById('planContent').innerHTML=`
+    <div style="padding-top:8px">
+      <div class="card-gold">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="title" style="margin:0">📅 今日修煉任務</div>
+          ${hasTrained?'<span style="color:#22c55e;font-size:12px">已修煉 ✓</span>':''}
+        </div>
+        ${todayParts.includes('休息')?'<div style="color:#ccc">🌙 今日閉關休養，明日更強</div>':
+          todayParts.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:${hasTrained?'#22c55e':'#666'}">${hasTrained?'✓':'○'}</span><span style="color:#fff">${p}</span></div>`).join('')}
+        ${!hasTrained&&!todayParts.includes('休息')?'<div style="color:#f97316;font-size:12px;margin-top:8px">⚠️ 道友，今日尚未修煉！</div>':''}
+      </div>
+      <div class="card">
+        <div class="title">🗓 本週修煉計劃</div>
+        ${weekHtml}
+        <button class="btn-dark" onclick="showEditPlan()" style="margin-top:8px">編輯計劃</button>
+      </div>
+      <div class="card">
+        <div class="title">⚖️ 均衡修煉建議</div>
+        ${balanceHtml}
+        ${fatigueHtml}
+      </div>
+    </div>`;
+}
+
+function showEditPlan(){
+  const days=['日','一','二','三','四','五','六'];
+  const opts=['上肢推','上肢拉','下肢','下肢髖','心肺','核心','柔韌','全身','自由修煉','休息'];
+  let html=`<div class="card"><div class="title">📝 編輯本週計劃</div>`;
+  [1,2,3,4,5,6,0].forEach(d=>{
+    const parts=state.weeklyPlan[d]||[];
+    html+=`<div style="margin-bottom:10px">
+      <div style="color:#FFD700;font-size:13px;margin-bottom:4px">週${days[d]}</div>
+      <div id="parts_${d}" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+        ${parts.map(p=>`<span style="background:#222;border-radius:6px;padding:3px 8px;font-size:12px;color:#fff">${p} <button onclick="removePlanPart(${d},'${p}')" style="background:none;border:none;color:#666;cursor:pointer">✕</button></span>`).join('')}
+      </div>
+      <select onchange="addPlanPart(${d},this.value);this.value=''">
+        <option value="">＋ 新增部位</option>
+        ${opts.map(o=>`<option value="${o}">${o}</option>`).join('')}
+      </select>
+    </div>`;
+  });
+  html+=`<button class="btn-gold" onclick="renderPlan()">完成</button></div>`;
+  document.getElementById('planContent').innerHTML=html;
+}
+
+function addPlanPart(day,part){if(!part)return;if(!state.weeklyPlan[day])state.weeklyPlan[day]=[];if(!state.weeklyPlan[day].includes(part))state.weeklyPlan[day].push(part);saveState();showEditPlan()}
+function removePlanPart(day,part){state.weeklyPlan[day]=state.weeklyPlan[day].filter(p=>p!==part);saveState();showEditPlan()}
+
+// ===== 個人資料頁 =====
+function renderProfile(){
+  const p=state.profile;
+  const realmRows=REALMS.map((r,i)=>{
+    const isCurrent=i===p.majorRealm;
+    const isPassed=i<p.majorRealm;
+    return`<div class="realm-row">
+      <div style="font-size:24px;opacity:${isPassed||isCurrent?1:0.3}">${r.icon}</div>
+      <div class="realm-info">
+        <div class="realm-title" style="color:${isCurrent?'#FFD700':isPassed?'#fff':'#555'}">${r.name}</div>
+        <div style="font-size:11px;color:${isCurrent?'rgba(255,215,0,0.7)':isPassed?'#22c55e':'#444'}">${isCurrent?'當前境界 · '+STAGES[p.minorRealm]:isPassed?'已突破':'未解鎖'}</div>
+      </div>
+      ${isPassed?'<span class="badge badge-green">✓</span>':isCurrent?'<span class="badge badge-yellow">修煉中</span>':''}
+    </div>`;
+  }).join('');
+  
+  const pillsHtml=p.pills.length===0?
+    '<div style="color:#666;text-align:center;padding:12px">尚未獲得修為丹<br>突破個人紀錄即可獲得！</div>':
+    [...p.pills].reverse().slice(0,10).map(pill=>`<div class="pill-row"><div class="pill-info"><div class="pill-reason">💊 ${pill.reason}</div><div class="pill-date">${new Date(pill.date).toLocaleDateString('zh-TW')}</div></div><div class="pill-qi">+${Math.round(pill.qi)} ⚡</div></div>`).join('');
+  
+  document.getElementById('profileContent').innerHTML=`
+    <div style="padding-top:8px">
+      <div class="card-gold" style="text-align:center">
+        <div style="font-size:60px">${REALMS[p.majorRealm].icon}</div>
+        <div style="color:#fff;font-size:20px;font-weight:bold;margin:4px 0">${p.name}</div>
+        <div style="color:#FFD700;font-size:14px">${realmDisplay(p.majorRealm,p.minorRealm)}</div>
+        <div class="stat-row" style="margin-top:12px">
+          <div class="stat-item"><div style="font-size:20px">🔥</div><div class="stat-val" style="color:#f97316">${p.consecutiveDays}</div><div class="stat-lbl">連續天數</div></div>
+          <div class="stat-item"><div style="font-size:20px">⚡</div><div class="stat-val" style="color:#FFD700">${Math.round(p.totalQi)}</div><div class="stat-lbl">累積靈氣</div></div>
+          <div class="stat-item"><div style="font-size:20px">💊</div><div class="stat-val" style="color:#a855f7">${p.pills.length}</div><div class="stat-lbl">修為丹</div></div>
+        </div>
+        <button class="btn-dark" onclick="showEditProfile()" style="margin-top:8px">編輯資料</button>
+      </div>
+      <div class="card">
+        <div class="title">💪 肉身強度數據</div>
+        <div class="body-data-row">
+          <div class="body-item"><div class="body-icon">⚖️</div><div class="body-val">${p.weight?p.weight+'kg':'未設定'}</div><div class="body-lbl">體重</div></div>
+          <div class="body-item"><div class="body-icon">📏</div><div class="body-val">${p.height?p.height+'cm':'未設定'}</div><div class="body-lbl">身高</div></div>
+          <div class="body-item"><div class="body-icon">🔬</div><div class="body-val">${p.bodyFat?p.bodyFat+'%':'未設定'}</div><div class="body-lbl">體脂率</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="title">📖 修煉境界總覽</div>
+        ${realmRows}
+      </div>
+      <div class="card">
+        <div class="title">💊 修為丹歷史</div>
+        ${pillsHtml}
+      </div>
+      <div class="card">
+        <div class="title">⚙️ 設定</div>
+        <button class="btn-red" onclick="if(confirm('確定重置所有數據？'))resetAll()">重置所有數據</button>
+      </div>
+    </div>`;
+}
+
+function showEditProfile(){
+  const p=state.profile;
+  document.getElementById('profileContent').innerHTML=`
+    <div class="card" style="margin-top:8px">
+      <div class="title">✏️ 編輯資料</div>
+      <input id="eName" placeholder="道號" value="${p.name}">
+      <input id="eWeight" type="number" placeholder="體重 (kg)" value="${p.weight||''}">
+      <input id="eHeight" type="number" placeholder="身高 (cm)" value="${p.height||''}">
+      <input id="eBodyFat" type="number" placeholder="體脂率 (%)" value="${p.bodyFat||''}">
+      <button class="btn-gold" onclick="saveProfile()">儲存</button>
+      <button class="btn-dark" onclick="renderProfile()">取消</button>
+    </div>`;
+}
+
+function saveProfile(){
+  state.profile.name=document.getElementById('eName').value||'修仙者';
+  state.profile.weight=parseFloat(document.getElementById('eWeight').value)||null;
+  state.profile.height=parseFloat(document.getElementById('eHeight').value)||null;
+  state.profile.bodyFat=parseFloat(document.getElementById('eBodyFat').value)||null;
+  saveState();renderProfile();
+}
+
+function resetAll(){state.profile={name:'修仙者',majorRealm:0,minorRealm:0,currentQi:0,totalQi:0,consecutiveDays:0,lastTraining:null,pills:[],weight:null,height:null,bodyFat:null};state.logs=[];state.customExercises=[];saveState();renderAll()}
+
+// ===== 初始化 =====
+loadState();
+renderHome();
+</script>
+</body>
+</html>
