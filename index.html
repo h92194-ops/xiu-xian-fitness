@@ -19,7 +19,6 @@ body{background:#000;color:#fff;font-family:-apple-system,sans-serif;max-width:4
 .card{background:#111;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:12px}
 .card-gold{background:#111;border:1px solid rgba(255,215,0,0.3);border-radius:16px;padding:16px;margin-bottom:12px}
 .title{color:#FFD700;font-size:16px;font-weight:bold;margin-bottom:12px}
-.subtitle{color:#999;font-size:12px;margin-bottom:8px}
 .btn-gold{background:#FFD700;color:#000;border:none;border-radius:12px;padding:12px;width:100%;font-size:16px;font-weight:bold;cursor:pointer;margin-top:8px}
 .btn-dark{background:#222;color:#fff;border:none;border-radius:12px;padding:10px;width:100%;font-size:14px;cursor:pointer;margin-top:8px}
 .btn-red{background:rgba(255,50,50,0.2);color:#ff5555;border:1px solid rgba(255,50,50,0.3);border-radius:12px;padding:10px;width:100%;font-size:14px;cursor:pointer;margin-top:8px}
@@ -37,7 +36,6 @@ body{background:#000;color:#fff;font-family:-apple-system,sans-serif;max-width:4
 .exercise-item{background:#1a1a1a;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;border:1px solid #222}
 .exercise-item.selected{border-color:rgba(255,215,0,0.5);background:#1f1f00}
 .ex-name{font-size:15px;font-weight:600;color:#fff}
-.ex-sub{font-size:12px;color:#666;margin-top:2px}
 .ex-last{font-size:11px;color:rgba(255,215,0,0.7);margin-top:3px}
 .set-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .set-input{background:#222;border:1px solid #333;border-radius:8px;color:#fff;padding:6px;width:65px;font-size:14px;text-align:center}
@@ -67,7 +65,6 @@ body{background:#000;color:#fff;font-family:-apple-system,sans-serif;max-width:4
 .realm-row:last-child{border-bottom:none}
 .realm-info{flex:1}
 .realm-title{font-size:14px;color:#fff}
-.realm-desc{font-size:11px;color:#666;margin-top:2px}
 .badge{font-size:11px;padding:2px 8px;border-radius:10px}
 .badge-green{background:rgba(76,175,80,0.2);color:#4CAF50}
 .badge-yellow{background:rgba(255,215,0,0.2);color:#FFD700}
@@ -84,15 +81,11 @@ body{background:#000;color:#fff;font-family:-apple-system,sans-serif;max-width:4
 .body-lbl{font-size:11px;color:#666}
 input,select{background:#222;border:1px solid #333;border-radius:10px;color:#fff;padding:10px;width:100%;font-size:14px;margin-bottom:8px}
 select option{background:#222}
-.alert{background:#1a1a00;border:1px solid rgba(255,215,0,0.5);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px}
-.alert-title{color:#FFD700;font-size:18px;font-weight:bold;margin-bottom:8px}
 .attr-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .attr-label{color:#fff;font-size:12px;width:65px}
 .attr-bar{flex:1;background:#222;border-radius:6px;height:20px;overflow:hidden}
 .attr-fill{height:100%;border-radius:6px}
 .attr-pct{font-size:11px;color:#666;width:32px;text-align:right}
-.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a}
-.toggle-row:last-child{border-bottom:none}
 .period-sel{display:flex;gap:8px;margin-bottom:12px}
 .period-btn{flex:1;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#666;padding:8px;font-size:13px;cursor:pointer}
 .period-btn.active{background:rgba(255,215,0,0.15);border-color:#FFD700;color:#FFD700}
@@ -134,14 +127,58 @@ select option{background:#222}
 </div>
 
 <script>
-const REALMS=[{name:'煉氣',icon:'🌱'},{name:'築基',icon:'⚡'},{name:'結丹',icon:'🔥'},{name:'元嬰',icon:'💫'},{name:'化神',icon:'🌟'},{name:'煉虛',icon:'✨'},{name:'合體',icon:'🌙'},{name:'大乘',icon:'☀️'}];
-const STAGES=['初期','中期','圓滿'];
+// ===== 境界系統 =====
+// 煉氣期：13層；其他：初期/中期/圓滿
+const LIANQI_LAYERS = 13;
+const STAGES = ['初期','中期','圓滿'];
+const REALMS = [
+  {name:'煉氣',icon:'🌱',type:'layers'},
+  {name:'築基',icon:'⚡',type:'stages'},
+  {name:'結丹',icon:'🔥',type:'stages'},
+  {name:'元嬰',icon:'💫',type:'stages'},
+  {name:'化神',icon:'🌟',type:'stages'},
+  {name:'煉虛',icon:'✨',type:'stages'},
+  {name:'合體',icon:'🌙',type:'stages'},
+  {name:'大乘',icon:'☀️',type:'stages'}
+];
+
 const ATTRS={str:{name:'體魄',icon:'💪',color:'#ef4444'},sta:{name:'根骨',icon:'❤️',color:'#22c55e'},agi:{name:'身法',icon:'🌀',color:'#3b82f6'},aux:{name:'輔助',icon:'✨',color:'#a855f7'}};
 const ENVS=[{id:'bodyweight',name:'徒手',icon:'🤸'},{id:'gym',name:'重訓',icon:'🏋️'},{id:'cardio',name:'有氧',icon:'🏃'},{id:'resistance',name:'彈力帶',icon:'🎯'}];
 const BODY_PARTS=['上肢推','上肢拉','下肢','下肢髖','心肺','核心','柔韌','全身','輔助'];
 
+// realm: {major: 0-7, minor: 0-12(煉氣) or 0-2(其他)}
+function realmDisplay(major, minor) {
+  if(major === 0) return `${REALMS[0].icon} 煉氣 · 第${minor+1}層`;
+  return `${REALMS[major].icon} ${REALMS[major].name} · ${STAGES[minor]}`;
+}
+
+function realmFullName(major, minor) {
+  if(major === 0) return `煉氣第${minor+1}層`;
+  return `${REALMS[major].name}${STAGES[minor]}`;
+}
+
+function maxMinor(major) {
+  return major === 0 ? LIANQI_LAYERS - 1 : 2;
+}
+
+function nextRealm(major, minor) {
+  if(minor < maxMinor(major)) return {major, minor: minor+1};
+  if(major < 7) return {major: major+1, minor: 0};
+  return null;
+}
+
+function requiredQi(major, minor) {
+  if(major === 0) {
+    // 煉氣1-13層，初期給強烈正回饋
+    const layerQi = [50,80,120,160,200,250,300,360,420,500,600,700,800];
+    return layerQi[minor] || 50;
+  }
+  const bases = [500,1500,4000,10000,25000,60000,150000];
+  const mults = [1.0,1.5,2.0];
+  return bases[major-1] * mults[minor];
+}
+
 const EXERCISES=[
-// 徒手 - 胸部/上肢推
 {id:'b1',name:'伏地挺身',attr:'str',envs:['bodyweight'],type:'reps',diff:1.0,from:0,part:'上肢推'},
 {id:'b2',name:'膝蓋伏地挺身',attr:'str',envs:['bodyweight'],type:'reps',diff:0.5,from:0,part:'上肢推'},
 {id:'b3',name:'寬距伏地挺身',attr:'str',envs:['bodyweight'],type:'reps',diff:1.1,from:0,part:'上肢推'},
@@ -157,7 +194,6 @@ const EXERCISES=[
 {id:'b13',name:'派克伏地挺身',attr:'str',envs:['bodyweight'],type:'reps',diff:1.5,from:2,part:'上肢推'},
 {id:'b14',name:'倒立伏地挺身（靠牆）',attr:'str',envs:['bodyweight'],type:'reps',diff:2.5,from:4,part:'上肢推'},
 {id:'b15',name:'倒立伏地挺身（自由）',attr:'str',envs:['bodyweight'],type:'reps',diff:4.0,from:6,part:'上肢推'},
-// 徒手 - 背部/上肢拉
 {id:'b16',name:'引體向上',attr:'str',envs:['bodyweight'],type:'reps',diff:2.0,from:2,part:'上肢拉'},
 {id:'b17',name:'反手引體向上',attr:'str',envs:['bodyweight'],type:'reps',diff:1.8,from:1,part:'上肢拉'},
 {id:'b18',name:'寬握引體向上',attr:'str',envs:['bodyweight'],type:'reps',diff:2.2,from:2,part:'上肢拉'},
@@ -168,10 +204,8 @@ const EXERCISES=[
 {id:'b23',name:'超人式',attr:'str',envs:['bodyweight'],type:'reps',diff:0.8,from:0,part:'上肢拉'},
 {id:'b24',name:'背伸展',attr:'str',envs:['bodyweight'],type:'reps',diff:0.7,from:0,part:'上肢拉'},
 {id:'b25',name:'鳥狗式',attr:'agi',envs:['bodyweight'],type:'reps',diff:0.6,from:0,part:'核心'},
-// 徒手 - 肩部
 {id:'b26',name:'折刀撐',attr:'str',envs:['bodyweight'],type:'reps',diff:1.2,from:1,part:'上肢推'},
 {id:'b27',name:'肩推伏地挺身',attr:'str',envs:['bodyweight'],type:'reps',diff:1.3,from:1,part:'上肢推'},
-// 徒手 - 腿部
 {id:'b28',name:'徒手深蹲',attr:'str',envs:['bodyweight'],type:'reps',diff:1.0,from:0,part:'下肢'},
 {id:'b29',name:'相撲深蹲',attr:'str',envs:['bodyweight'],type:'reps',diff:1.0,from:0,part:'下肢'},
 {id:'b30',name:'深蹲跳',attr:'sta',envs:['bodyweight'],type:'reps',diff:1.3,from:0,part:'下肢'},
@@ -188,7 +222,6 @@ const EXERCISES=[
 {id:'b41',name:'登階',attr:'str',envs:['bodyweight'],type:'reps',diff:0.8,from:0,part:'下肢'},
 {id:'b42',name:'側跨步',attr:'str',envs:['bodyweight'],type:'reps',diff:0.8,from:0,part:'下肢'},
 {id:'b43',name:'哥本哈根側板',attr:'str',envs:['bodyweight'],type:'repsTime',diff:1.5,from:2,part:'下肢'},
-// 徒手 - 核心
 {id:'b44',name:'平板支撐',attr:'agi',envs:['bodyweight'],type:'time',diff:1.0,from:0,part:'核心'},
 {id:'b45',name:'側平板支撐',attr:'agi',envs:['bodyweight'],type:'time',diff:1.0,from:0,part:'核心'},
 {id:'b46',name:'仰臥起坐',attr:'agi',envs:['bodyweight'],type:'reps',diff:0.8,from:0,part:'核心'},
@@ -206,7 +239,6 @@ const EXERCISES=[
 {id:'b58',name:'風車式',attr:'agi',envs:['bodyweight'],type:'reps',diff:1.0,from:1,part:'核心'},
 {id:'b59',name:'剪刀腳',attr:'agi',envs:['bodyweight'],type:'reps',diff:0.8,from:0,part:'核心'},
 {id:'b60',name:'V型捲腹',attr:'agi',envs:['bodyweight'],type:'reps',diff:1.2,from:1,part:'核心'},
-// 徒手 - 有氧全身
 {id:'b61',name:'波比跳',attr:'sta',envs:['bodyweight','cardio'],type:'reps',diff:1.5,from:1,part:'心肺'},
 {id:'b62',name:'開合跳',attr:'sta',envs:['bodyweight'],type:'reps',diff:0.5,from:0,part:'心肺'},
 {id:'b63',name:'高抬腿',attr:'sta',envs:['bodyweight'],type:'reps',diff:0.8,from:0,part:'心肺'},
@@ -217,7 +249,6 @@ const EXERCISES=[
 {id:'b68',name:'皮膚貓式',attr:'agi',envs:['bodyweight'],type:'reps',diff:2.5,from:4,part:'全身'},
 {id:'b69',name:'前水平準備式',attr:'str',envs:['bodyweight'],type:'time',diff:3.0,from:5,part:'全身'},
 {id:'b70',name:'後水平準備式',attr:'str',envs:['bodyweight'],type:'time',diff:3.0,from:5,part:'全身'},
-// 徒手 - 柔韌
 {id:'b71',name:'瑜珈',attr:'agi',envs:['bodyweight'],type:'time',diff:0.8,from:0,part:'柔韌'},
 {id:'b72',name:'動態拉伸',attr:'agi',envs:['bodyweight'],type:'time',diff:0.7,from:0,part:'柔韌'},
 {id:'b73',name:'靜態拉伸',attr:'agi',envs:['bodyweight'],type:'time',diff:0.6,from:0,part:'柔韌'},
@@ -235,7 +266,6 @@ const EXERCISES=[
 {id:'b85',name:'股四頭肌拉伸',attr:'agi',envs:['bodyweight'],type:'time',diff:0.4,from:0,part:'柔韌'},
 {id:'b86',name:'臀肌拉伸',attr:'agi',envs:['bodyweight'],type:'time',diff:0.4,from:0,part:'柔韌'},
 {id:'b87',name:'胸椎旋轉',attr:'agi',envs:['bodyweight'],type:'reps',diff:0.5,from:0,part:'柔韌'},
-// 重訓 - 胸部
 {id:'g1',name:'槓鈴臥推',attr:'str',envs:['gym'],type:'repsWeight',diff:2.0,from:1,part:'上肢推'},
 {id:'g2',name:'啞鈴臥推',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'上肢推'},
 {id:'g3',name:'上斜槓鈴臥推',attr:'str',envs:['gym'],type:'repsWeight',diff:1.9,from:1,part:'上肢推'},
@@ -245,7 +275,6 @@ const EXERCISES=[
 {id:'g7',name:'電纜飛鳥',attr:'str',envs:['gym'],type:'repsWeight',diff:1.5,from:1,part:'上肢推'},
 {id:'g8',name:'機器臥推',attr:'str',envs:['gym'],type:'repsWeight',diff:1.6,from:1,part:'上肢推'},
 {id:'g9',name:'蝴蝶機夾胸',attr:'str',envs:['gym'],type:'repsWeight',diff:1.4,from:1,part:'上肢推'},
-// 重訓 - 背部
 {id:'g10',name:'槓鈴划船',attr:'str',envs:['gym'],type:'repsWeight',diff:2.0,from:1,part:'上肢拉'},
 {id:'g11',name:'啞鈴划船',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'上肢拉'},
 {id:'g12',name:'單臂啞鈴划船',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'上肢拉'},
@@ -259,7 +288,6 @@ const EXERCISES=[
 {id:'g20',name:'相撲硬舉',attr:'str',envs:['gym'],type:'repsWeight',diff:2.3,from:2,part:'下肢髖'},
 {id:'g21',name:'六角槓硬舉',attr:'str',envs:['gym'],type:'repsWeight',diff:2.3,from:2,part:'下肢髖'},
 {id:'g22',name:'早安運動',attr:'str',envs:['gym'],type:'repsWeight',diff:1.5,from:1,part:'下肢髖'},
-// 重訓 - 肩部
 {id:'g23',name:'槓鈴肩推',attr:'str',envs:['gym'],type:'repsWeight',diff:2.0,from:1,part:'上肢推'},
 {id:'g24',name:'啞鈴肩推',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'上肢推'},
 {id:'g25',name:'阿諾德推舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'上肢推'},
@@ -268,7 +296,6 @@ const EXERCISES=[
 {id:'g28',name:'俯身側平舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.2,from:0,part:'上肢拉'},
 {id:'g29',name:'直立划船',attr:'str',envs:['gym'],type:'repsWeight',diff:1.5,from:1,part:'上肢拉'},
 {id:'g30',name:'電纜側平舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.2,from:0,part:'上肢推'},
-// 重訓 - 二頭肌
 {id:'g31',name:'槓鈴彎舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.5,from:0,part:'上肢拉'},
 {id:'g32',name:'啞鈴彎舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.4,from:0,part:'上肢拉'},
 {id:'g33',name:'錘式彎舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.4,from:0,part:'上肢拉'},
@@ -277,14 +304,12 @@ const EXERCISES=[
 {id:'g36',name:'反握彎舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.3,from:0,part:'上肢拉'},
 {id:'g37',name:'電纜彎舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.4,from:0,part:'上肢拉'},
 {id:'g38',name:'斜板彎舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.5,from:1,part:'上肢拉'},
-// 重訓 - 三頭肌
 {id:'g39',name:'窄握臥推',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'上肢推'},
 {id:'g40',name:'法式推舉',attr:'str',envs:['gym'],type:'repsWeight',diff:1.5,from:1,part:'上肢推'},
 {id:'g41',name:'頭後臂屈伸',attr:'str',envs:['gym'],type:'repsWeight',diff:1.4,from:0,part:'上肢推'},
 {id:'g42',name:'滑輪下壓',attr:'str',envs:['gym'],type:'repsWeight',diff:1.3,from:0,part:'上肢推'},
 {id:'g43',name:'反握滑輪下壓',attr:'str',envs:['gym'],type:'repsWeight',diff:1.3,from:0,part:'上肢推'},
 {id:'g44',name:'單臂滑輪下壓',attr:'str',envs:['gym'],type:'repsWeight',diff:1.3,from:0,part:'上肢推'},
-// 重訓 - 腿部
 {id:'g45',name:'槓鈴深蹲',attr:'str',envs:['gym'],type:'repsWeight',diff:2.5,from:1,part:'下肢'},
 {id:'g46',name:'前蹲',attr:'str',envs:['gym'],type:'repsWeight',diff:2.3,from:2,part:'下肢'},
 {id:'g47',name:'箱上深蹲',attr:'str',envs:['gym'],type:'repsWeight',diff:2.2,from:1,part:'下肢'},
@@ -298,12 +323,10 @@ const EXERCISES=[
 {id:'g55',name:'單腳硬舉',attr:'str',envs:['gym'],type:'repsWeight',diff:2.0,from:2,part:'下肢髖'},
 {id:'g56',name:'坐姿小腿推蹬',attr:'str',envs:['gym'],type:'repsWeight',diff:0.8,from:0,part:'下肢'},
 {id:'g57',name:'站姿小腿推蹬',attr:'str',envs:['gym'],type:'repsWeight',diff:0.8,from:0,part:'下肢'},
-// 重訓 - 核心
 {id:'g58',name:'懸吊舉腿',attr:'agi',envs:['gym'],type:'reps',diff:1.5,from:2,part:'核心'},
 {id:'g59',name:'負重捲腹',attr:'agi',envs:['gym'],type:'repsWeight',diff:1.2,from:1,part:'核心'},
 {id:'g60',name:'滾輪',attr:'agi',envs:['gym'],type:'reps',diff:1.8,from:2,part:'核心'},
 {id:'g61',name:'負重俄羅斯轉體',attr:'agi',envs:['gym'],type:'reps',diff:1.2,from:1,part:'核心'},
-// 重訓 - 全身
 {id:'g62',name:'壺鈴擺盪',attr:'str',envs:['gym'],type:'reps',diff:1.5,from:1,part:'全身'},
 {id:'g63',name:'壺鈴上搏',attr:'str',envs:['gym'],type:'reps',diff:2.0,from:2,part:'全身'},
 {id:'g64',name:'壺鈴深蹲',attr:'str',envs:['gym'],type:'repsWeight',diff:1.8,from:1,part:'下肢'},
@@ -314,7 +337,6 @@ const EXERCISES=[
 {id:'g69',name:'借力推',attr:'str',envs:['gym'],type:'repsWeight',diff:2.5,from:3,part:'全身'},
 {id:'g70',name:'雪橇推',attr:'str',envs:['gym'],type:'time',diff:2.0,from:2,part:'全身'},
 {id:'g71',name:'戰繩',attr:'sta',envs:['gym'],type:'time',diff:1.5,from:1,part:'心肺'},
-// 有氧
 {id:'c1',name:'跑步機',attr:'sta',envs:['cardio','gym'],type:'time',diff:0.5,from:0,part:'心肺'},
 {id:'c2',name:'飛輪',attr:'sta',envs:['cardio','gym'],type:'time',diff:0.5,from:0,part:'心肺'},
 {id:'c3',name:'橢圓機',attr:'sta',envs:['cardio','gym'],type:'time',diff:0.4,from:0,part:'心肺'},
@@ -328,33 +350,28 @@ const EXERCISES=[
 {id:'c11',name:'騎自行車',attr:'sta',envs:['cardio'],type:'time',diff:0.4,from:0,part:'心肺'},
 {id:'c12',name:'HIIT訓練',attr:'sta',envs:['cardio','bodyweight'],type:'time',diff:1.5,from:1,part:'心肺'},
 {id:'c13',name:'爬坡跑',attr:'sta',envs:['cardio'],type:'time',diff:0.8,from:1,part:'心肺'},
-// 彈力帶 - 胸部
 {id:'r1',name:'彈力帶臥推',attr:'str',envs:['resistance'],type:'reps',diff:1.5,from:0,part:'上肢推'},
 {id:'r2',name:'彈力帶伏地挺身',attr:'str',envs:['resistance'],type:'reps',diff:1.3,from:0,part:'上肢推'},
 {id:'r3',name:'彈力帶上斜夾胸',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢推'},
 {id:'r4',name:'彈力帶下斜夾胸',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢推'},
 {id:'r5',name:'彈力帶胸推',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢推'},
-// 彈力帶 - 背部
 {id:'r6',name:'彈力帶划船',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢拉'},
 {id:'r7',name:'彈力帶單臂划船',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢拉'},
 {id:'r8',name:'彈力帶下拉',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢拉'},
 {id:'r9',name:'彈力帶直立划船',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢拉'},
 {id:'r10',name:'彈力帶面拉',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢拉'},
 {id:'r11',name:'彈力帶反向飛鳥',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢拉'},
-// 彈力帶 - 肩部
 {id:'r12',name:'彈力帶肩推',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'上肢推'},
 {id:'r13',name:'彈力帶側平舉',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢推'},
 {id:'r14',name:'彈力帶前平舉',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢推'},
 {id:'r15',name:'彈力帶臉拉',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢拉'},
 {id:'r16',name:'彈力帶水平外展',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢推'},
-// 彈力帶 - 二頭/三頭
 {id:'r17',name:'彈力帶彎舉',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢拉'},
 {id:'r18',name:'彈力帶錘式彎舉',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢拉'},
 {id:'r19',name:'彈力帶集中彎舉',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢拉'},
 {id:'r20',name:'彈力帶臂屈伸',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢推'},
 {id:'r21',name:'彈力帶下壓',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢推'},
 {id:'r22',name:'彈力帶頭後臂屈伸',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'上肢推'},
-// 彈力帶 - 腿部
 {id:'r23',name:'彈力帶深蹲',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'下肢'},
 {id:'r24',name:'彈力帶分腿蹲',attr:'str',envs:['resistance'],type:'reps',diff:1.3,from:0,part:'下肢'},
 {id:'r25',name:'彈力帶弓步蹲',attr:'str',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'下肢'},
@@ -364,12 +381,10 @@ const EXERCISES=[
 {id:'r29',name:'彈力帶側走',attr:'str',envs:['resistance'],type:'reps',diff:0.8,from:0,part:'下肢'},
 {id:'r30',name:'彈力帶腿後勾',attr:'str',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'下肢'},
 {id:'r31',name:'彈力帶小腿提踵',attr:'str',envs:['resistance'],type:'reps',diff:0.6,from:0,part:'下肢'},
-// 彈力帶 - 核心
 {id:'r32',name:'彈力帶棒式',attr:'agi',envs:['resistance'],type:'time',diff:1.2,from:0,part:'核心'},
 {id:'r33',name:'彈力帶抗旋轉',attr:'agi',envs:['resistance'],type:'reps',diff:1.2,from:0,part:'核心'},
 {id:'r34',name:'彈力帶捲腹',attr:'agi',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'核心'},
 {id:'r35',name:'彈力帶俄羅斯轉體',attr:'agi',envs:['resistance'],type:'reps',diff:1.0,from:0,part:'核心'},
-// 輔助
 {id:'a1',name:'蛋白質補充',attr:'aux',envs:['bodyweight','gym','cardio','resistance'],type:'reps',diff:0.5,from:0,part:'輔助'},
 {id:'a2',name:'優質睡眠',attr:'aux',envs:['bodyweight','gym','cardio','resistance'],type:'time',diff:1.0,from:0,part:'輔助'},
 {id:'a3',name:'冥想',attr:'aux',envs:['bodyweight','gym','cardio','resistance'],type:'time',diff:0.5,from:0,part:'輔助'},
@@ -379,21 +394,17 @@ const EXERCISES=[
 // ===== 狀態管理 =====
 let state={
   profile:{name:'修仙者',majorRealm:0,minorRealm:0,currentQi:0,totalQi:0,consecutiveDays:0,lastTraining:null,pills:[],weight:null,height:null,bodyFat:null},
-  logs:[],
-  customExercises:[],
+  logs:[],customExercises:[],
   weeklyPlan:{1:['上肢推','核心'],2:['下肢','有氧'],3:['上肢拉','柔韌'],4:['有氧','核心'],5:['全身','柔韌'],6:['自由修煉'],0:['休息','柔韌']},
   workout:{env:'bodyweight',selectedEx:null,sets:[],note:''},
-  statPeriod:'week',
-  currentPage:'home',
-  searchQuery:''
+  statPeriod:'week',currentPage:'home',searchQuery:''
 };
 
 function saveState(){localStorage.setItem('xiu_state',JSON.stringify(state))}
-function loadState(){const d=localStorage.getItem('xiu_state');if(d){const s=JSON.parse(d);state={...state,...s};state.workout={env:'bodyweight',selectedEx:null,sets:[],note:''};state.searchQuery=''}}
-
-function requiredQi(major,minor){const bases=[100,500,1500,4000,10000,25000,60000,150000];const mults=[1.0,1.5,2.0];return bases[major]*mults[minor]}
-function realmName(major,minor){return REALMS[major].name+STAGES[minor]}
-function realmDisplay(major,minor){return REALMS[major].icon+' '+REALMS[major].name+' · '+STAGES[minor]}
+function loadState(){
+  const d=localStorage.getItem('xiu_state');
+  if(d){const s=JSON.parse(d);state={...state,...s};state.workout={env:'bodyweight',selectedEx:null,sets:[],note:''};state.searchQuery=''}
+}
 
 function calcQi(ex,sets){
   let total=0;
@@ -469,13 +480,14 @@ function checkLevelUp(){
   const req=requiredQi(state.profile.majorRealm,state.profile.minorRealm);
   if(state.profile.currentQi>=req){
     state.profile.currentQi-=req;
-    if(state.profile.minorRealm<2){state.profile.minorRealm++}
-    else if(state.profile.majorRealm<7){state.profile.majorRealm++;state.profile.minorRealm=0}
-    document.getElementById('levelUpText').textContent='恭喜道友突破至\n'+realmDisplay(state.profile.majorRealm,state.profile.minorRealm)+'！\n\n天地靈氣湧入，修為大進！';
-    document.getElementById('levelUpModal').classList.add('show');
-    return true;
+    const next=nextRealm(state.profile.majorRealm,state.profile.minorRealm);
+    if(next){
+      state.profile.majorRealm=next.major;
+      state.profile.minorRealm=next.minor;
+      document.getElementById('levelUpText').textContent='恭喜道友突破至\n'+realmDisplay(next.major,next.minor)+'！\n\n天地靈氣湧入，修為大進！';
+      document.getElementById('levelUpModal').classList.add('show');
+    }
   }
-  return false;
 }
 
 function closeLevelUp(){document.getElementById('levelUpModal').classList.remove('show');renderAll()}
@@ -484,7 +496,7 @@ function saveWorkout(){
   const ex=[...EXERCISES,...state.customExercises].find(e=>e.id===state.workout.selectedEx);
   if(!ex||state.workout.sets.length===0)return;
   const qi=calcQi(ex,state.workout.sets);
-  const record={id:'r'+Date.now(),exId:ex.id,exName:ex.name,kung:ex.name,attr:ex.attr,sets:[...state.workout.sets],date:Date.now(),qi,note:state.workout.note};
+  const record={id:'r'+Date.now(),exId:ex.id,exName:ex.name,attr:ex.attr,sets:[...state.workout.sets],date:Date.now(),qi,note:state.workout.note};
   const prev=lastRecord(ex.id);
   if(prev&&ex.type==='repsWeight'){
     const prevBest=Math.max(...prev.sets.map(s=>parseFloat(s.weight)||0));
@@ -514,8 +526,7 @@ function showPage(page){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.querySelectorAll('.tab-btn')[['home','workout','stats','plan','profile'].indexOf(page)].classList.add('active');
-  state.currentPage=page;
-  renderPage(page);
+  state.currentPage=page;renderPage(page);
 }
 
 function renderAll(){renderPage(state.currentPage)}
@@ -543,6 +554,7 @@ function renderHome(){
     const status=f>0.7?'疲勞':f>0.4?'尚可':'充沛';
     vitalityHtml+=`<div class="vitality-row"><div class="vitality-label">${part}</div><div class="vitality-bar"><div class="vitality-fill" style="width:${f*100}%;background:${color}"></div></div><div class="vitality-status" style="color:${color}">${status}</div></div>`;
   });
+  const next=nextRealm(p.majorRealm,p.minorRealm);
   document.getElementById('homeContent').innerHTML=`
     <div style="text-align:center;padding:16px 0 8px">
       <div class="realm-icon">${REALMS[p.majorRealm].icon}</div>
@@ -555,7 +567,7 @@ function renderHome(){
         <div style="color:#666;font-size:12px">${Math.round(p.currentQi)} / ${req}</div>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div style="color:#666;font-size:12px;margin-top:4px">${p.majorRealm===7&&p.minorRealm===2?'已達最高境界':'下一境界：'+realmName(p.minorRealm===2?(p.majorRealm<7?p.majorRealm+1:p.majorRealm):p.majorRealm,p.minorRealm===2?0:(p.minorRealm+1))}</div>
+      <div style="color:#666;font-size:12px;margin-top:4px">${next?'下一境界：'+realmFullName(next.major,next.minor):'已達最高境界'}</div>
     </div>
     <div class="card">
       <div class="title">📅 今日修煉</div>
@@ -579,12 +591,7 @@ function renderHome(){
 function renderWorkout(){
   const allEx=[...EXERCISES,...state.customExercises];
   const query=state.searchQuery.toLowerCase();
-  const filtered=allEx.filter(e=>{
-    const matchEnv=e.envs.includes(state.workout.env);
-    const matchLevel=e.from<=state.profile.majorRealm;
-    const matchSearch=!query||e.name.toLowerCase().includes(query);
-    return matchEnv&&matchLevel&&matchSearch;
-  });
+  const filtered=allEx.filter(e=>e.envs.includes(state.workout.env)&&e.from<=state.profile.majorRealm&&(!query||e.name.toLowerCase().includes(query)));
   const grouped={};
   BODY_PARTS.forEach(p=>{grouped[p]=filtered.filter(e=>e.part===p)});
   let envHtml=ENVS.map(e=>`<button class="env-btn${state.workout.env===e.id?' active':''}" onclick="setEnv('${e.id}')">${e.icon} ${e.name}</button>`).join('');
@@ -660,7 +667,7 @@ function formatSets(sets,type){return sets.slice(0,2).map(s=>formatSet(s,type)).
 
 function showAddCustom(){
   document.getElementById('workoutContent').innerHTML+=`
-    <div class="card" style="margin-top:12px" id="customForm">
+    <div class="card" style="margin-top:12px">
       <div class="title">🔮 創建秘技</div>
       <input id="cName" placeholder="動作名稱">
       <select id="cAttr">${Object.entries(ATTRS).map(([k,v])=>`<option value="${k}">${v.icon} ${v.name}</option>`).join('')}</select>
@@ -676,9 +683,7 @@ function saveCustom(){
   const name=document.getElementById('cName').value;
   if(!name)return;
   const ex={id:'c'+Date.now(),name,attr:document.getElementById('cAttr').value,envs:['bodyweight','gym','cardio','resistance'],type:document.getElementById('cType').value,diff:parseFloat(document.getElementById('cDiff').value)||1,from:0,part:document.getElementById('cPart').value,custom:true};
-  state.customExercises.push(ex);
-  saveState();
-  renderWorkout();
+  state.customExercises.push(ex);saveState();renderWorkout();
 }
 
 function renderStats(){
@@ -725,15 +730,13 @@ function setPeriod(p){state.statPeriod=p;renderStats()}
 function renderPlan(){
   const weekday=new Date().getDay();
   const todayParts=state.weeklyPlan[weekday]||[];
-  const tlog=todayLog();
-  const hasTrained=!!tlog;
+  const tlog=todayLog();const hasTrained=!!tlog;
   const days=['日','一','二','三','四','五','六'];
   const freq=bodyPartFreq(7);
   const lacking=['上肢推','上肢拉','下肢','心肺','核心','柔韌'].filter(p=>(freq[p]||0)<2);
   const fatigued=['上肢推','上肢拉','下肢','心肺','核心'].filter(p=>fatigueLevel(p)>0.7);
   let weekHtml=[0,1,2,3,4,5,6].map(d=>{
-    const parts=state.weeklyPlan[d]||[];
-    const isToday=d===weekday;
+    const parts=state.weeklyPlan[d]||[];const isToday=d===weekday;
     const hasLog=state.logs.some(l=>{const ld=new Date(l.date);return ld.getDay()===d&&(Date.now()-l.date)<7*86400000});
     return`<div class="week-row${isToday?' today':''}">
       <div class="week-day${isToday?' today':''}">週${days[d]}</div>
@@ -741,9 +744,8 @@ function renderPlan(){
       ${hasLog?'<span class="week-check">✓</span>':isToday?'<span style="color:#FFD700;font-size:11px">今日</span>':''}
     </div>`;
   }).join('');
-  let balanceHtml=lacking.length===0?
-    '<div class="success-box"><span style="color:#22c55e">✅ 本週修煉均衡，繼續保持！</span></div>':
-    `<div style="color:#666;font-size:12px;margin-bottom:8px">本週以下部位修煉不足：</div>${lacking.map(p=>`<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#fff">⚠️ ${p}</span><span style="color:#666;font-size:12px">${freq[p]||0} 次</span></div>`).join('')}`;
+  let balanceHtml=lacking.length===0?'<div class="success-box"><span style="color:#22c55e">✅ 本週修煉均衡！</span></div>':
+    `<div style="color:#666;font-size:12px;margin-bottom:8px">以下部位本週不足：</div>${lacking.map(p=>`<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#fff">⚠️ ${p}</span><span style="color:#666;font-size:12px">${freq[p]||0} 次</span></div>`).join('')}`;
   let fatigueHtml=fatigued.length>0?`<div class="warning-box"><div style="color:#f97316;font-size:12px;margin-bottom:4px">⚠️ 以下部位建議休息：</div>${fatigued.map(p=>`<div style="color:#fff">🔥 ${p}</div>`).join('')}</div>`:'';
   document.getElementById('planContent').innerHTML=`
     <div style="padding-top:8px">
@@ -752,19 +754,11 @@ function renderPlan(){
           <div class="title" style="margin:0">📅 今日修煉任務</div>
           ${hasTrained?'<span style="color:#22c55e;font-size:12px">已修煉 ✓</span>':''}
         </div>
-        ${todayParts.includes('休息')?'<div style="color:#ccc">🌙 今日閉關休養，明日更強</div>':
-          todayParts.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:${hasTrained?'#22c55e':'#666'}">${hasTrained?'✓':'○'}</span><span style="color:#fff">${p}</span></div>`).join('')}
+        ${todayParts.includes('休息')?'<div style="color:#ccc">🌙 今日閉關休養</div>':todayParts.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:${hasTrained?'#22c55e':'#666'}">${hasTrained?'✓':'○'}</span><span style="color:#fff">${p}</span></div>`).join('')}
         ${!hasTrained&&!todayParts.includes('休息')?'<div style="color:#f97316;font-size:12px;margin-top:8px">⚠️ 道友，今日尚未修煉！</div>':''}
       </div>
-      <div class="card">
-        <div class="title">🗓 本週修煉計劃</div>
-        ${weekHtml}
-        <button class="btn-dark" onclick="showEditPlan()" style="margin-top:8px">編輯計劃</button>
-      </div>
-      <div class="card">
-        <div class="title">⚖️ 均衡修煉建議</div>
-        ${balanceHtml}${fatigueHtml}
-      </div>
+      <div class="card"><div class="title">🗓 本週修煉計劃</div>${weekHtml}<button class="btn-dark" onclick="showEditPlan()" style="margin-top:8px">編輯計劃</button></div>
+      <div class="card"><div class="title">⚖️ 均衡修煉建議</div>${balanceHtml}${fatigueHtml}</div>
     </div>`;
 }
 
@@ -796,17 +790,20 @@ function renderProfile(){
   const p=state.profile;
   const realmRows=REALMS.map((r,i)=>{
     const isCurrent=i===p.majorRealm;const isPassed=i<p.majorRealm;
+    let desc='';
+    if(isCurrent){desc=i===0?`當前：第${p.minorRealm+1}層 / 共13層`:`當前：${STAGES[p.minorRealm]}`}
+    else if(isPassed){desc='已突破'}
+    else{desc='未解鎖'}
     return`<div class="realm-row">
       <div style="font-size:24px;opacity:${isPassed||isCurrent?1:0.3}">${r.icon}</div>
       <div class="realm-info">
         <div class="realm-title" style="color:${isCurrent?'#FFD700':isPassed?'#fff':'#555'}">${r.name}</div>
-        <div style="font-size:11px;color:${isCurrent?'rgba(255,215,0,0.7)':isPassed?'#22c55e':'#444'}">${isCurrent?'當前境界 · '+STAGES[p.minorRealm]:isPassed?'已突破':'未解鎖'}</div>
+        <div style="font-size:11px;color:${isCurrent?'rgba(255,215,0,0.7)':isPassed?'#22c55e':'#444'}">${desc}</div>
       </div>
       ${isPassed?'<span class="badge badge-green">✓</span>':isCurrent?'<span class="badge badge-yellow">修煉中</span>':''}
     </div>`;
   }).join('');
-  const pillsHtml=p.pills.length===0?
-    '<div style="color:#666;text-align:center;padding:12px">尚未獲得修為丹<br>突破個人紀錄即可獲得！</div>':
+  const pillsHtml=p.pills.length===0?'<div style="color:#666;text-align:center;padding:12px">尚未獲得修為丹<br>突破個人紀錄即可獲得！</div>':
     [...p.pills].reverse().slice(0,10).map(pill=>`<div class="pill-row"><div class="pill-info"><div class="pill-reason">💊 ${pill.reason}</div><div class="pill-date">${new Date(pill.date).toLocaleDateString('zh-TW')}</div></div><div class="pill-qi">+${Math.round(pill.qi)} ⚡</div></div>`).join('');
   document.getElementById('profileContent').innerHTML=`
     <div style="padding-top:8px">
@@ -831,10 +828,7 @@ function renderProfile(){
       </div>
       <div class="card"><div class="title">📖 修煉境界總覽</div>${realmRows}</div>
       <div class="card"><div class="title">💊 修為丹歷史</div>${pillsHtml}</div>
-      <div class="card">
-        <div class="title">⚙️ 設定</div>
-        <button class="btn-red" onclick="if(confirm('確定重置所有數據？'))resetAll()">重置所有數據</button>
-      </div>
+      <div class="card"><div class="title">⚙️ 設定</div><button class="btn-red" onclick="if(confirm('確定重置所有數據？'))resetAll()">重置所有數據</button></div>
     </div>`;
 }
 
@@ -860,7 +854,10 @@ function saveProfile(){
   saveState();renderProfile();
 }
 
-function resetAll(){state.profile={name:'修仙者',majorRealm:0,minorRealm:0,currentQi:0,totalQi:0,consecutiveDays:0,lastTraining:null,pills:[],weight:null,height:null,bodyFat:null};state.logs=[];state.customExercises=[];saveState();renderAll()}
+function resetAll(){
+  state.profile={name:'修仙者',majorRealm:0,minorRealm:0,currentQi:0,totalQi:0,consecutiveDays:0,lastTraining:null,pills:[],weight:null,height:null,bodyFat:null};
+  state.logs=[];state.customExercises=[];saveState();renderAll();
+}
 
 loadState();
 renderHome();
