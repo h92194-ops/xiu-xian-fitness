@@ -811,7 +811,8 @@ function renderWorkout(){
         <button class="set-del" onclick="removeSet(${i})">🗑</button>
       </div>`).join('');
     workoutHtml=`
-      <div class="card-gold" style="margin-top:12px">
+      <div class="card-gold" id="workoutForm" style="margin-top:12px">
+
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="title" style="margin:0">⚔️ ${ex.name} 修煉中</div>
           <button onclick="clearWorkout()" style="background:none;border:none;color:#666;font-size:20px;cursor:pointer">✕</button>
@@ -839,7 +840,15 @@ function renderWorkout(){
 }
 
 function setEnv(env){state.workout.env=env;state.workout.selectedEx=null;state.workout.sets=[];renderWorkout()}
-function selectEx(id){state.workout.selectedEx=id;state.workout.sets=[];renderWorkout();setTimeout(()=>document.querySelector('.card-gold')?.scrollIntoView({behavior:'smooth'}),100)}
+function selectEx(id){
+  state.workout.selectedEx=id;
+  state.workout.sets=[{}];
+  renderWorkout();
+  setTimeout(()=>{
+    const el=document.getElementById('workoutForm');
+    if(el)el.scrollIntoView({behavior:'smooth'});
+  },100);
+}
 function clearWorkout(){state.workout.selectedEx=null;state.workout.sets=[];renderWorkout()}
 function addSet(){state.workout.sets.push({...(state.workout.sets[state.workout.sets.length-1]||{})});renderWorkout()}
 function removeSet(i){state.workout.sets.splice(i,1);renderWorkout()}
